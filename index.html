@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>yuncodex - Login/Register + Instagram</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <style>
+    * {
+      margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif;
+    }
+    body, html {
+      height: 100%;
+      overflow-x: hidden;
+      background: black;
+      position: relative;
+      color: #00ff00;
+    }
+    /* Matrix arka plan canvas */
+    #matrix-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      background-color: black;
+      display: block;
+    }
+
+    /* Başlık */
+    .header {
+      background: transparent;
+      color: #00ff00;
+      text-align: center;
+      padding: 40px 20px;
+      font-size: 48px;
+      font-weight: bold;
+      max-width: 600px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      user-select: none;
+      font-family: 'Courier New', Courier, monospace;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-left: auto;
+      margin-right: auto;
+      z-index: 1;
+      position: relative;
+      /* Hafif arka plan için opak siyah */
+      background-color: rgba(0,0,0,0.6);
+      box-shadow: 0 0 10px #00ff00aa;
+    }
+    .header img {
+      width: 40px;
+      user-select: none;
+    }
+    .header img:first-child {
+      width: 50px;
+    }
+    #yuncodex-text {
+      animation: blink 2s infinite;
+      color: #00ff00;
+      font-family: 'Courier New', Courier, monospace;
+    }
+    #header-01 {
+      display: none; /* 01 yazısı kaldırıldı */
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Auth kutusu */
+    .auth-box {
+      background-color: rgba(0,0,0,0.7);
+      border-radius: 20px;
+      box-shadow: 0 8px 30px rgba(0, 255, 0, 0.4);
+      max-width: 450px;
+      width: 100%;
+      padding: 30px 40px 40px;
+      box-sizing: border-box;
+      margin-left: auto;
+      margin-right: auto;
+      color: #00ff00;
+      position: relative;
+      z-index: 1;
+      backdrop-filter: blur(5px);
+      border: 1px solid #00ff0044;
+    }
+    .toggle-buttons {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 30px;
+      gap: 15px;
+    }
+    .toggle-buttons button {
+      flex: 1;
+      padding: 12px 0;
+      border: none;
+      background-color: #003300aa;
+      color: #00ff00;
+      font-weight: 600;
+      font-size: 16px;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      user-select: none;
+      box-shadow: 0 0 10px #00ff00aa;
+    }
+    .toggle-buttons button.active,
+    .toggle-buttons button:hover {
+      background-color: #00ff00;
+      color: black;
+      box-shadow: 0 0 20px #00ff00;
+    }
+    form {
+      display: none;
+      flex-direction: column;
+    }
+    form.active {
+      display: flex;
+    }
+    .input-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #00ff0044;
+      border-radius: 10px;
+      font-size: 15px;
+      background: rgba(0,0,0,0.6);
+      color: #00ff00;
+      outline: none;
+    }
+    .input-group input::placeholder {
+      color: #00ff99aa;
+    }
+    .input-group .toggle-password {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #00ff00cc;
+      font-size: 16px;
+      user-select: none;
+    }
+    .forgot {
+      text-align: right;
+      font-size: 13px;
+      margin-bottom: 20px;
+      color: #00ff66;
+    }
+    .forgot a {
+      color: #00ff00;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .forgot a:hover {
+      text-decoration: underline;
+    }
+    .submit-btn {
+      width: 100%;
+      padding: 12px;
+      background-color: #00ff00;
+      color: black;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 0 10px #00ff00aa;
+    }
+    .submit-btn:hover {
+      background-color: #00cc00;
+      box-shadow: 0 0 20px #00ff00;
+    }
+    .social-login {
+      display: flex;
+      justify-content: center;
+      margin-top: 25px;
+      gap: 25px;
+    }
+    .social-login i {
+      font-size: 22px;
+      color: #00ff00cc;
+      cursor: pointer;
+      transition: color 0.3s ease;
+      user-select: none;
+      text-shadow: 0 0 5px #00ff00aa;
+    }
+    .social-login i:hover {
+      color: #00ff00;
+    }
+    /* Instagram iframe ve welcome */
+    .welcome-container {
+      max-width: 450px;
+      width: 100%;
+      background: rgba(0,0,0,0.7);
+      border-radius: 20px;
+      box-shadow: 0 8px 30px rgba(0,255,0,0.4);
+      padding: 20px;
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+      color: #00ff00;
+      backdrop-filter: blur(5px);
+      border: 1px solid #00ff0044;
+      position: relative;
+      z-index: 1;
+    }
+    .welcome-container h1 {
+      color: #00ff00;
+      margin-bottom: 20px;
+    }
+    .welcome-container button {
+      margin-top: 30px;
+      background-color: #00ff00;
+      color: black;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 0 10px #00ff00aa;
+    }
+    .welcome-container button:hover {
+      background-color: #00cc00;
+      box-shadow: 0 0 20px #00ff00;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="matrix-canvas"></canvas>
+
+  <div class="header">
+    <img
+      src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png"
+      alt="Instagram"
+    />
+    <span id="yuncodex-text">yuncodex</span>
+    <img
+      src="https://static.thenounproject.com/png/3842046-200.png"
+      alt="Like"
+    />
+  </div>
+
+  <div class="auth-box" id="auth-box">
+    <div class="toggle-buttons" id="toggle-buttons">
+      <button id="login-toggle" aria-controls="login-form" aria-selected="false">Login</button>
+      <button id="register-toggle" class="active" aria-controls="register-form" aria-selected="true">Register</button>
+    </div>
+
+    <form id="login-form" aria-hidden="true">
+      <div class="input-group">
+        <input type="text" placeholder="Username" id="login-username" required />
+      </div>
+      <div class="input-group">
+        <input type="password" placeholder="Password" id="login-password" required />
+        <span class="toggle-password" data-target="login-password" title="Show/Hide Password">
+          <i class="fas fa-eye"></i>
+        </span>
+      </div>
+      <button type="submit" class="submit-btn">Login</button>
+    </form>
+
+    <form id="register-form" class="active" aria-hidden="false">
+      <div class="input-group">
+        <input type="text" placeholder="Full Name" id="register-fullname" required />
+      </div>
+      <div class="input-group">
+        <input type="email" placeholder="Email" id="register-email" required />
+      </div>
+      <div class="input-group">
+        <input type="text" placeholder="Username" id="register-username" required />
+      </div>
+      <div class="input-group">
+        <input type="password" placeholder="Password" id="register-password" required />
+        <span class="toggle-password" data-target="register-password" title="Show/Hide Password">
+          <i class="fas fa-eye"></i>
+        </span>
+      </div>
+      <button type="submit" class="submit-btn">Register</button>
+    </form>
+  </div>
+
+  <!-- Hoşgeldin bölümü -->
+  <div class="welcome-container" id="welcome-container" style="display:none;">
+    <h1>Hoşgeldiniz! İşte Instagram sayfanız:</h1>
+    <p>Instagram sayfanı yeni sekmede açmak için aşağıdaki butona tıkla.</p>
+    <button id="open-instagram-btn" class="submit-btn">Instagram'ı Aç</button>
+    <button id="logout-btn" style="margin-left: 10px; background:#ef4444;">Çıkış Yap</button>
+  </div>
+
+  <script>
+    // Matrix animasyonu tam ekran canvas
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      resetDrops();
+    });
+
+    const letters = ['0', '1'];
+    const blockSize = 18; // Hücre boyutu
+    let columns, rows;
+    let drops = [];
+
+    function resetDrops() {
+      columns = Math.floor(canvas.width / blockSize);
+      rows = Math.floor(canvas.height / blockSize);
+      drops = [];
+      for (let x = 0; x < columns; x++) {
+        drops[x] = Math.floor(Math.random() * rows);
+      }
+    }
+    resetDrops();
+
+    function draw() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.font = blockSize + 'px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      for (let i = 0; i < drops.length; i++) {
+        let x = i * blockSize + blockSize / 2;
+        let y = drops[i] * blockSize + blockSize / 2;
+
+        let text = letters[Math.floor(Math.random() * letters.length)];
+
+        // Küçük yarı saydam yeşil blok
+        ctx.fillStyle = 'rgba(0, 255, 0, 0.2)';
+        ctx.fillRect(i * blockSize, drops[i] * blockSize, blockSize, blockSize);
+
+        // Parlak 0 veya 1
+        ctx.fillStyle = '#00ff00';
+        ctx.fillText(text, x, y);
+
+        if (drops[i] * blockSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+
+    setInterval(draw, 50);
+
+    // toggle password gözükür/gizlenir
+    document.querySelectorAll('.toggle-password').forEach(toggle => {
+      toggle.addEventListener('click', () => {
+        const targetId = toggle.getAttribute('data-target');
+        const input = document.getElementById(targetId);
+        if (input.type === 'password') {
+          input.type = 'text';
+          toggle.innerHTML = '<i class="fas fa-eye-slash"></i>';
+        } else {
+          input.type = 'password';
+          toggle.innerHTML = '<i class="fas fa-eye"></i>';
+        }
+      });
+    });
+
+    // toggle butonları kontrol
+    const loginToggle = document.getElementById('login-toggle');
+    const registerToggle = document.getElementById('register-toggle');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const authBox = document.getElementById('auth-box');
+    const welcomeContainer = document.getElementById('welcome-container');
+    const logoutBtn = document.getElementById('logout-btn');
+    const openInstagramBtn = document.getElementById('open-instagram-btn');
+
+    loginToggle.addEventListener('click', () => {
+      loginToggle.classList.add('active');
+      loginToggle.setAttribute('aria-selected', 'true');
+      registerToggle.classList.remove('active');
+      registerToggle.setAttribute('aria-selected', 'false');
+      loginForm.classList.add('active');
+      loginForm.setAttribute('aria-hidden', 'false');
+      registerForm.classList.remove('active');
+      registerForm.setAttribute('aria-hidden', 'true');
+    });
+
+    registerToggle.addEventListener('click', () => {
+      registerToggle.classList.add('active');
+      registerToggle.setAttribute('aria-selected', 'true');
+      loginToggle.classList.remove('active');
+      loginToggle.setAttribute('aria-selected', 'false');
+      registerForm.classList.add('active');
+      registerForm.setAttribute('aria-hidden', 'false');
+      loginForm.classList.remove('active');
+      loginForm.setAttribute('aria-hidden', 'true');
+    });
+
+    // localStorage'dan kullanıcı bilgisi çek
+    function getUser() {
+      const user = localStorage.getItem('yuncodexUser');
+      return user ? JSON.parse(user) : null;
+    }
+    // localStorage'a kullanıcı kaydet
+    function setUser(user) {
+      localStorage.setItem('yuncodexUser', JSON.stringify(user));
+    }
+    // localStorage'dan kullanıcı sil
+    function clearUser() {
+      localStorage.removeItem('yuncodexUser');
+    }
+
+    // Sayfa yüklendiğinde eğer kullanıcı varsa direkt hoşgeldin göster
+    window.addEventListener('load', () => {
+      const user = getUser();
+      if (user) {
+        showWelcome();
+      } else {
+        showAuth();
+      }
+    });
+
+    // Kayıt formu submit
+    registerForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const username = document.getElementById('register-username').value.trim();
+      const password = document.getElementById('register-password').value;
+      if (!username || !password) {
+        alert('Lütfen kullanıcı adı ve şifre girin.');
+        return;
+      }
+      setUser({ username, password });
+      alert('Kayıt başarılı! Şimdi giriş yapabilirsiniz.');
+      loginToggle.click();
+    });
+
+    // Login formu submit
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value;
+      const user = getUser();
+      if (!user) {
+        alert('Önce kayıt olun lütfen.');
+        return;
+      }
+      if (username === user.username && password === user.password) {
+        alert('Giriş başarılı!');
+        showWelcome();
+      } else {
+        alert('Kullanıcı adı veya şifre yanlış.');
+      }
+    });
+
+    // Hoşgeldin gösterimi
+    function showWelcome() {
+      authBox.style.display = 'none';
+      welcomeContainer.style.display = 'block';
+    }
+    // Giriş/kayıt formu göster
+    function showAuth() {
+      authBox.style.display = 'block';
+      welcomeContainer.style.display = 'none';
+    }
+
+    // Çıkış butonu
+    logoutBtn.addEventListener('click', () => {
+      clearUser();
+      showAuth();
+      loginForm.reset();
+      registerForm.reset();
+      loginToggle.click();
+    });
+
+    // Instagram butonu
+    openInstagramBtn.addEventListener('click', () => {
+      window.open('https://www.instagram.com/yunusemrr55l/', '_blank');
+    });
+  </script>
+</body>
+</html>
+  <div class="auth-box" id="auth-box"> ... </div>
+
+  <!-- Youtube embed -->
+  <div style="text-align:center; margin: 20px 0;">
+    <iframe width="320" height="180" 
+      src="https://www.youtube.com/embed/8tKL74sZfGI?controls=1" 
+      title="YouTube Shorts" frameborder="0" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+      allowfullscreen>
+    </iframe>
+  </div>
+
+  <div class="welcome-container" id="welcome-container" style="display:none;"> ... </div>
